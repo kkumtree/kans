@@ -1,0 +1,180 @@
+// Converting kans-1w.yaml to Terraform!
+  [#-----------------------------------]    4%  00:03:00 code has been checked out.
+
+variable key_name {
+  description = "Name of an existing EC2 KeyPair to enable SSH access to the instances."
+  type = string
+}
+
+variable sg_ingress_ssh_cidr {
+  description = "The IP address range that can be used to communicate to the EC2 instances."
+  type = string
+  default = "0.0.0.0/0"
+}
+
+variable my_instance_type {
+  description = "Enter EC2 Type(Spec) Ex) t2.micro."
+  type = string
+  default = "t3.small"
+}
+
+variable latest_ami_id {
+  description = "(DO NOT CHANGE)"
+  type = string
+  default = "/aws/service/canonical/ubuntu/server/22.04/stable/current/amd64/hvm/ebs-gp2/ami-id"
+}
+
+variable target_region {
+  type = string
+  default = "ap-northeast-2"
+}
+
+variable availability_zone1 {
+  type = string
+  default = "ap-northeast-2a"
+}
+
+variable availability_zone2 {
+  type = string
+  default = "ap-northeast-2c"
+}
+
+variable vpc_block {
+  type = string
+  default = "192.168.0.0/16"
+}
+
+variable public_subnet1_block {
+  type = string
+  default = "192.168.50.0/24"
+}
+
+variable public_subnet2_block {
+  type = string
+  default = "192.168.60.0/24"
+}
+
+resource "aws_vpc" "kans_vpc" {
+  cidr_block = var.vpc_block
+  enable_dns_support = true
+  enable_dns_hostnames = true
+  tags = {
+    Name = "Kans-VPC"
+  }
+}
+
+resource "aws_subnet" "public_subnet1" {
+  availability_zone = var.availability_zone1
+  cidr_block = var.public_subnet1_block
+  vpc_id = aws_vpc.kans_vpc.arn
+  map_public_ip_on_launch = true
+  tags = {
+    Name = "Kans-PublicSubnet1"
+  }
+}
+
+resource "aws_subnet" "public_subnet2" {
+  availability_zone = var.availability_zone2
+  cidr_block = var.public_subnet2_block
+  vpc_id = aws_vpc.kans_vpc.arn
+  map_public_ip_on_launch = true
+  tags = {
+    Name = "Kans-PublicSubnet2"
+  }
+}
+
+resource "aws_internet_gateway" "internet_gateway" {}
+
+resource "aws_vpn_gateway_attachment" "vpc_gateway_attachment" {
+  vpc_id = aws_vpc.kans_vpc.arn
+}
+
+resource "aws_route_table" "public_subnet_route_table" {
+  vpc_id = aws_vpc.kans_vpc.arn
+  tags = {
+    Name = "Kans-PublicSubnetRouteTable"
+  }
+}
+
+resource "aws_route" "public_subnet_route" {
+  route_table_id = aws_route_table.public_subnet_route_table.id
+  destination_cidr_block = "0.0.0.0/0"
+  gateway_id = aws_internet_gateway.internet_gateway.id
+}
+
+resource "aws_route_table_association" "public_subnet1_route_table_association" {
+  subnet_id = aws_subnet.public_subnet1.id
+  route_table_id = aws_route_table.public_subnet_route_table.id
+}
+
+resource "aws_route_table_association" "public_subnet2_route_table_association" {
+  subnet_id = aws_subnet.public_subnet2.id
+  route_table_id = aws_route_table.public_subnet_route_table.id
+}
+
+resource "aws_security_group" "ec2_sg" {
+  description = "Kans EC2 Security Group"
+  vpc_id = aws_vpc.kans_vpc.arn
+  ingress = [
+    {
+      protocol = "-1"
+      cidr_blocks = var.sg_ingress_ssh_cidr
+    },
+    {
+      protocol = "-1"
+      cidr_blocks = var.vpc_block
+    }
+  ]
+  tags = {
+    Name = "Kans-SG"
+  }
+}
+
+resource "aws_ec2_instance_state" "ec21" {
+  instance_id = var.my_instance_type
+  // CF Property(ImageId) = var.latest_ami_id
+  // CF Property(KeyName) = var.key_name
+  // CF Property(NetworkInterfaces) = [
+  //   {
+  //     DeviceIndex = 0
+  //     SubnetId = aws_subnet.public_subnet1.id
+  //     GroupSet = [
+  //       aws_security_group.ec2_sg.arn
+  //     ]
+  //     AssociatePublicIpAddress = true
+  //     PrivateIpAddress = "192.168.50.10"
+  //   }
+  // ]
+  // CF Property(BlockDeviceMappings) = [
+  //   {
+  //     DeviceName = "/dev/sda1"
+  //     Ebs = {
+  //       VolumeType = "gp3"
+  //       VolumeSize = 30
+  //       DeleteOnTermination = true
+  //     }
+  //   }
+  // ]
+  // CF Property(UserData) = base64encode("#!/bin/bash
+  // hostnamectl --static set-hostname MyServer
+  //
+  // # Config convenience
+  // echo 'alias vi=vim' >> /etc/profile
+  // systemctl stop ufw && systemctl disable ufw
+  // systemctl stop apparmor && systemctl disable apparmor
+  // ln -sf /usr/share/zoneinfo/Asia/Seoul /etc/localtime
+  //
+  // # Install packages
+  // apt update -qq && apt install tree jq bridge-utils net-tools conntrack gcc make pkg-config libseccomp-dev -y        
+  // ")
+  // CF Property(tags) = {
+  //   Name = "MyServer"
+  // }
+}
+
+output "serverhost" {
+  // Unable to resolve Fn::GetAtt with value: [
+  //   "EC21",
+  //   "PublicIp"
+  // ] because Could not convert Cloudformation property "PublicIp" to Terraform attribute of ['id'].
+}
