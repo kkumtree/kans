@@ -27,7 +27,12 @@ resource "aws_subnet" "public_subnet2" {
   }
 }
 
-resource "aws_internet_gateway" "internet_gateway" {}
+resource "aws_internet_gateway" "internet_gateway" {
+  vpc_id = aws_vpc.kans_vpc.id
+  tags = {
+    Name = "Kans-IGW"
+  }
+}
 
 resource "aws_route_table" "public_subnet_route_table" {
   vpc_id = aws_vpc.kans_vpc.id
