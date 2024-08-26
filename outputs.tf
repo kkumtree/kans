@@ -1,3 +1,3 @@
 output "serverhost" {
-  value = aws_instance.webserver.public_dns
+  value = aws_instance.ec21.public_dns
 }

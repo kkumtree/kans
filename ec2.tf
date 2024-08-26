@@ -14,7 +14,6 @@ resource "aws_instance" "ec21" {
     network_interface_id = aws_network_interface.ec21.id
   }
   root_block_device {
-    device_name           = "/dev/sda1"
     volume_type           = "gp3"
     volume_size           = 30
     delete_on_termination = true

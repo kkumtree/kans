@@ -13,18 +13,18 @@ resource "aws_security_group" "ec2_sg" {
   }
 }
 
-resource "aws_vpc_security_group_ingress" "ec2_sg_ssh" {
+resource "aws_vpc_security_group_ingress_rule" "ec2_sg_ssh" {
   security_group_id = aws_security_group.ec2_sg.id
   from_port         = 22
   to_port           = 22
-  protocol          = "tcp"
-  cidr_blocks       = var.sg_ingress_ssh_cidr
+  ip_protocol       = "tcp"
+  cidr_ipv4         = var.sg_ingress_ssh_cidr
 }
 
-resource "aws_vpc_security_group_ingress" "ec2_sg_all" {
+resource "aws_vpc_security_group_ingress_rule" "ec2_sg_all" {
   security_group_id = aws_security_group.ec2_sg.id
   from_port         = 0
   to_port           = 0
-  protocol          = "-1"
-  cidr_blocks       = var.vpc_block
+  ip_protocol       = "-1"
+  cidr_ipv4         = var.vpc_block
 }
