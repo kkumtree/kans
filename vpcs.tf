@@ -10,7 +10,7 @@ resource "aws_vpc" "kans_vpc" {
 resource "aws_subnet" "public_subnet1" {
   availability_zone       = var.availability_zone1
   cidr_block              = var.public_subnet1_block
-  vpc_id                  = aws_vpc.kans_vpc.arn
+  vpc_id                  = aws_vpc.kans_vpc.id
   map_public_ip_on_launch = true
   tags = {
     Name = "Kans-PublicSubnet1"
@@ -20,7 +20,7 @@ resource "aws_subnet" "public_subnet1" {
 resource "aws_subnet" "public_subnet2" {
   availability_zone       = var.availability_zone2
   cidr_block              = var.public_subnet2_block
-  vpc_id                  = aws_vpc.kans_vpc.arn
+  vpc_id                  = aws_vpc.kans_vpc.id
   map_public_ip_on_launch = true
   tags = {
     Name = "Kans-PublicSubnet2"
@@ -30,7 +30,7 @@ resource "aws_subnet" "public_subnet2" {
 resource "aws_internet_gateway" "internet_gateway" {}
 
 resource "aws_route_table" "public_subnet_route_table" {
-  vpc_id = aws_vpc.kans_vpc.arn
+  vpc_id = aws_vpc.kans_vpc.id
   tags = {
     Name = "Kans-PublicSubnetRouteTable"
   }
