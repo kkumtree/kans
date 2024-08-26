@@ -1,5 +1,5 @@
 resource "aws_instance" "ec21" {
-  ami           = var.latest_ami_id
+  ami           = data.aws_ssm_parameter.latest_ami_id.insecure_value
   instance_type = var.my_instance_type
   key_name      = var.key_name
   root_block_device {
