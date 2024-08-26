@@ -1,6 +1,6 @@
 resource "aws_network_interface" "ec21" {
   subnet_id       = aws_subnet.public_subnet1.id
-  security_groups = [aws_security_group.ec2_sg.id]
+  # security_groups = [aws_security_group.ec2_sg.id]
 
   private_ip = "192.168.50.10"
 }
@@ -20,7 +20,7 @@ resource "aws_instance" "ec21" {
     delete_on_termination = true
   }
   user_data                   = base64encode(local.user_data_ec21)
-  subnet_id                   = aws_subnet.public_subnet1.id
+  subnet_id                   = aws_network_interface.ec21.subnet_id
   security_groups             = [aws_security_group.ec2_sg.id]
   associate_public_ip_address = aws_subnet.public_subnet1.map_public_ip_on_launch ? null : true
   private_ip                  = "192.168.50.10"
