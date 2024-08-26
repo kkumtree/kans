@@ -1,6 +1,6 @@
 resource "aws_security_group" "ec2_sg" {
   description = "Kans EC2 Security Group"
-  vpc_id      = aws_vpc.kans_vpc.arn
+  vpc_id      = aws_vpc.kans_vpc.id
   egress {
     from_port        = 0
     to_port          = 0
